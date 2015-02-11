@@ -1,0 +1,24 @@
+body{
+margin:0;
+padding:0;
+}
+
+.main{
+	background-color:#fff;
+	margin-left:25%;
+	margin-right:25%;
+	margin-top:15%;
+	margin-bottom:30%;
+	border:1px solid #ccc;
+	font-family: 'Poiret One', cursive;
+	font-size:20px;
+	padding: 20px;
+}
+
+.isset{
+	background-color:#42C0FB;
+	width:25%;
+	height:7%;
+	font-family: 'Play', sans-serif;
+	font-size:18px;
+}
