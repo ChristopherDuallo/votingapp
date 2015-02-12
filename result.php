@@ -25,8 +25,7 @@
 		$res->vote_tally();
 
 
-		echo '<a href="votepage.php">&larr; Vote Again</a>';
-		echo '<a href="logout.php" style="float:right">Log Out &rarr;</a>';
+		echo '<a href="logout.php" style="float:right">Log Out &rarr;</a><br>';
 	
 		
 	?>

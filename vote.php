@@ -1,11 +1,15 @@
 <?php 
+require_once 'src/facebook.php';
 if(!isset($_SESSION)){
 	session_start();
 }
+
 $name = $_SESSION['name'];
 $fbid = $_SESSION['fbid'];
+
 date_default_timezone_set('Africa/Nairobi');
-$date = date('Y-m-d H:i:s', time());
+
+
 class vote{
 
 	function __construct($fbid){
@@ -13,11 +17,10 @@ class vote{
 	}
 
 	function check_votes_today(){
-		$fbid = $_SESSION['fbid'];
 		try {
 			include('connection.php');
 			$query = $dbh->prepare('SELECT votes_today FROM fblogin WHERE fbid=?');
-			$query->execute(array($fbid));
+			$query->execute(array($this->fbid));
 
 			while($row = $query->fetch()){
 				$votes_today = $row['votes_today'];
@@ -55,19 +58,20 @@ class vote{
 	function record_vote(){
 		try {
 			$votes_today = $this->votes_today();
-			$fbid = $_SESSION['fbid'];
 			include('connection.php');
 			$last_voted = date('Y-m-d H:i:s', time());
 			$fruit = $_POST['fruit'];
 			$query = $dbh->prepare('INSERT INTO votes(fbid, fruit) VALUES(:fbid, :fruit)');
-			$query->execute(array(':fbid'=>$fbid, ':fruit'=>$fruit));
+			$query->execute(array(':fbid'=>$this->fbid, ':fruit'=>$fruit));
 
 			$query2= $dbh->prepare('UPDATE fblogin SET last_voted=?, votes_today=? WHERE fbid=?');
-			$query2->execute(array($last_voted, $votes_today, $fbid));
+			$query2->execute(array($last_voted, $votes_today, $this->fbid));
 			if($query && $query2){
-				header("location:result.php");
 				$left = 3-$votes_today;
 				echo'You have '.$left.' vote(s) left to cast today';
+				if($left==0){
+					header("location:result.php");
+				}
 			}
 		} 
 		catch (PDOException $e) {
@@ -76,34 +80,36 @@ class vote{
 
 	}
 
+
+
 	function daily_reset(){
 		$timenow = date('Y-m-d H:i:s', time());
-		$timenow = new DateTime();
 		$votes_today = $this->check_votes_today();
 		if($votes_today ==3){
-			echo'Resetting daily vote...<br>';
+			
 			try {
 					include('connection.php');
-					$fbid = $_SESSION['fbid'];
 					$query = $dbh->prepare('SELECT last_voted FROM fblogin WHERE fbid=?');
-					$query->execute(array($fbid));
+					$query->execute(array($this->fbid));
 
 					while($row = $query->fetch()){
 						$last_voted = $row['last_voted'];
-						$last_voted = new DateTime();
-						$diff = $timenow->diff($last_voted);
-						$hours = $diff->h;
-						$hours = $hours + ($diff->days*24);
-						if($hours <24){
-							return false;
+						
+						global $diff;
+						$diff = (strtotime($timenow) - strtotime($last_voted))/3600;
+						
+						if($diff <24){
+							return $diff;
+							exit();
 						}
 						else{
 							$query = $dbh->prepare('UPDATE fblogin SET votes_today=0 WHERE fbid=?');
-							$query->execute(array($fbid));
+							$query->execute(array($this->fbid));
 							if($query){
-							return true;
+								return true;
 							}
 						}
+						
 
 					}
 				} 
@@ -112,6 +118,8 @@ class vote{
 			}
 		}	
 	}
+
+
 
 
 	function vote_tally(){
