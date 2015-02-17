@@ -36,8 +36,10 @@
 	else{
 
 		$time_to_vote = 24-$diff;
-		$time_to_vote = round($time_to_vote, 2);
-		echo 'Your 3 votes have been cast, try again after '.$time_to_vote.' hours!<br>'; 
+		$hours = floor($time_to_vote);
+		$minutes = ($time_to_vote-$hours)*60;
+		$minutes = floor($minutes);
+		echo 'Your 3 votes have been cast, try again after '.$hours.' hours and '.$minutes.' minutes!<br>'; 
 		echo '<a href="logout.php" style="float:right">Log Out &rarr;</a><br>';
 	}
 	
